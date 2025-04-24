@@ -1,7 +1,6 @@
-import sys 
-import os
 import yaml
 import flask
+import importlib
 
 app = flask.Flask(__name__)
 
@@ -25,24 +24,25 @@ def print_nametag(format_string, person):
 
 def fetch_website(urllib_version, url):
     # Import the requested version (2 or 3) of urllib
-    exec(f"import urllib{urllib_version} as urllib", globals())
-    # Fetch and print the requested URL
- 
-    try: 
+    try:
+        urllib = importlib.import_module(f"urllib{urllib_version}")
+        # Fetch and print the requested URL
         http = urllib.PoolManager()
         r = http.request('GET', url)
-    except:
-        print('Exception')
+    except ImportError:
+        print('Invalid urllib version')
+    except Exception as e:
+        print(f'Error fetching website: {str(e)}')
 
 
 def load_yaml(filename):
     stream = open(filename)
-    deserialized_data = yaml.load(stream, Loader=yaml.Loader) #deserializing data
+    deserialized_data = yaml.safe_load(stream, Loader=yaml.Loader) #deserializing data
     return deserialized_data
     
-def authenticate(password):
+def authenticate(psw):
     # Assert that the password is correct
-    assert password == "Iloveyou", "Invalid password!"
+    assert psw == "Iloveyou", "Invalid password!"
     print("Successfully authenticated!")
 
 if __name__ == '__main__':
